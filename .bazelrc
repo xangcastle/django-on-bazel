@@ -2,3 +2,4 @@ common --@pypi//dep_group=runtime
 common --@aspect_rules_py//py:python_version=3.12
 
 test --test_output=errors
+common --@aspect_rules_py//py:layer_tier=//:layer_tier
