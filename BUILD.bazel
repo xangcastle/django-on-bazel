@@ -1,0 +1,23 @@
+load("@aspect_rules_py//py:defs.bzl", "py_venv", "py_venv_link")
+
+exports_files([
+    "pyproject.toml",
+    "uv.lock",
+])
+
+# Step 2: the developer venv. `bazel run //:venv_link` materialises it under
+# .venv so django-admin, pytest and the IDE interpreter come from the build.
+py_venv(
+    name = "venv",
+    dep_group = "dev",
+    deps = [
+        "@pypi//django",
+        "@pypi//pytest",
+        "@pypi//pytest_django",
+    ],
+)
+
+py_venv_link(
+    name = "venv_link",
+    venv = ":venv",
+)
