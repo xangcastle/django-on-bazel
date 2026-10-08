@@ -1,0 +1,14 @@
+[project]
+name = "notes"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-django>=4.14.0",
+]
+runtime = [
+    "django>=5.2,<6",
+]
