@@ -1,4 +1,4 @@
-load("@aspect_rules_py//py:defs.bzl", "py_binary", "py_venv", "py_venv_link")
+load("@aspect_rules_py//py:defs.bzl", "py_binary", "py_test", "py_venv", "py_venv_link")
 
 exports_files([
     "pyproject.toml",
@@ -28,6 +28,24 @@ py_binary(
     srcs = ["manage.py"],
     env = {"DJANGO_SETTINGS_MODULE": "config.settings"},
     visibility = ["//visibility:public"],
+    deps = [
+        "//config",
+        "//notes",
+    ],
+)
+
+# Step 4: Django's own test runner as a plain py_test.
+py_test(
+    name = "django_tests",
+    srcs = ["manage.py"],
+    args = [
+        "test",
+        "notes",
+        "--noinput",
+    ],
+    dep_group = "dev",
+    env = {"DJANGO_SETTINGS_MODULE": "config.settings"},
+    main = "manage.py",
     deps = [
         "//config",
         "//notes",

@@ -1,4 +1,4 @@
-load("@aspect_rules_py//py:defs.bzl", "py_library")
+load("@aspect_rules_py//py:defs.bzl", "py_library", "py_pytest_test")
 
 py_library(
     name = "notes",
@@ -11,4 +11,19 @@ py_library(
     ),
     visibility = ["//visibility:public"],
     deps = ["@pypi//django"],
+)
+
+# Step 4, pytest driver: only the listed srcs are collected. Django's own runner
+# (notes/tests.py) runs from //:django_tests.
+py_pytest_test(
+    name = "api_test",
+    srcs = ["test_api.py"],
+    dep_group = "dev",
+    env = {"DJANGO_SETTINGS_MODULE": "config.settings"},
+    deps = [
+        ":notes",
+        "//config",
+        "@pypi//pytest",
+        "@pypi//pytest_django",
+    ],
 )
