@@ -1,0 +1,25 @@
+module(
+    name = "django_bazel_training",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "aspect_rules_py", version = "2.0.0-alpha.7")
+
+# Branch of aspect-build/rules_py#1587: py_venv_link trees carry bin/activate
+# and the console-script wrappers. Drop this override once it ships in a release.
+git_override(
+    module_name = "aspect_rules_py",
+    commit = "374b8a2df088cb9f4c36e187e2d56e01fce90613",
+    remote = "https://github.com/aspect-build/rules_py.git",
+)
+
+interpreters = use_extension("@aspect_rules_py//py:extensions.bzl", "python_interpreters")
+interpreters.configure(releases = ["20260814"])
+interpreters.toolchain(python_version = "3.12")
+use_repo(interpreters, "python_interpreters")
+
+register_toolchains("@python_interpreters//:all")
+
+uv_bin = use_extension("@aspect_rules_py//uv:extensions.bzl", "uv_bin")
+uv_bin.toolchain(version = "0.11.21")
+use_repo(uv_bin, "uv")

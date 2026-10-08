@@ -1,0 +1,8 @@
+bazel-*
+MODULE.bazel.lock
+db.sqlite3
+.venv
+.*.venv
+__pycache__/
+.idea/
+.vscode/
