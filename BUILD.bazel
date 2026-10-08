@@ -1,4 +1,6 @@
-load("@aspect_rules_py//py:defs.bzl", "py_binary", "py_test", "py_venv", "py_venv_link")
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("@aspect_rules_py//py:defs.bzl", "py_binary", "py_image_layer", "py_layer_tier", "py_test", "py_venv", "py_venv_link")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 
 exports_files([
     "pyproject.toml",
@@ -51,3 +53,67 @@ py_test(
         "//notes",
     ],
 )
+
+# Step 5: container image. Django gets its own layer, shared by every image
+# in the repo; everything else goes into one squashed layer.
+py_layer_tier(
+    name = "layer_tier",
+    groups = {
+        "@pip//django": "django",
+    },
+)
+
+py_image_layer(
+    name = "image_layers",
+    binary = ":manage",
+)
+
+oci_image(
+    name = "image_base",
+    base = "@ubuntu",
+    cmd = [
+        "runserver",
+        "0.0.0.0:8000",
+    ],
+    entrypoint = ["/app"],
+    env = {"NOTES_DB": "/tmp/notes.sqlite3"},
+    tars = [":image_layers"],
+)
+
+# Only the image is built for Linux; the loader below still runs on the host.
+# The host CPU picks the matching Linux platform, so `bazel run //:image.load`
+# works unchanged on an arm64 Mac and on an x86_64 workstation.
+platform_transition_filegroup(
+    name = "image",
+    srcs = [":image_base"],
+    target_platform = select({
+        "@platforms//cpu:arm64": ":linux_arm64",
+        "@platforms//cpu:x86_64": ":linux_x86_64",
+    }),
+)
+
+oci_load(
+    name = "image.load",
+    image = ":image",
+    repo_tags = ["notes:latest"],
+)
+
+# Target platforms for the image. The libc constraints tell uv which manylinux
+# wheels fit the base image (Ubuntu 24.04 ships glibc 2.39).
+[
+    platform(
+        name = "linux_" + cpu,
+        constraint_values = [
+            "@platforms//os:linux",
+            "@platforms//cpu:" + cpu,
+        ],
+        flags = [
+            "--@aspect_rules_py//uv/private/constraints/platform:platform_libc=glibc",
+            "--@aspect_rules_py//uv/private/constraints/platform:platform_version=2.39",
+        ],
+    )
+    for cpu in [
+        "arm64",
+        "x86_64",
+    ]
+]
