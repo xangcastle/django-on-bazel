@@ -1,4 +1,4 @@
-load("@aspect_rules_py//py:defs.bzl", "py_venv", "py_venv_link")
+load("@aspect_rules_py//py:defs.bzl", "py_binary", "py_venv", "py_venv_link")
 
 exports_files([
     "pyproject.toml",
@@ -20,4 +20,16 @@ py_venv(
 py_venv_link(
     name = "venv_link",
     venv = ":venv",
+)
+
+# Step 3: `bazel run //:manage -- runserver`.
+py_binary(
+    name = "manage",
+    srcs = ["manage.py"],
+    env = {"DJANGO_SETTINGS_MODULE": "config.settings"},
+    visibility = ["//visibility:public"],
+    deps = [
+        "//config",
+        "//notes",
+    ],
 )

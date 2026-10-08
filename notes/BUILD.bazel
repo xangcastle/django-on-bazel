@@ -1,0 +1,14 @@
+load("@aspect_rules_py//py:defs.bzl", "py_library")
+
+py_library(
+    name = "notes",
+    srcs = glob(
+        ["**/*.py"],
+        exclude = [
+            "tests.py",
+            "test_*.py",
+        ],
+    ),
+    visibility = ["//visibility:public"],
+    deps = ["@pypi//django"],
+)
