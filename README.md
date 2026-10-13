@@ -1,5 +1,7 @@
 # Django on Bazel
 
+Slides: https://docs.google.com/presentation/d/1alNvnGoE_2WM5wmcjNTv4OryvfnWC9-X-JPN36YBbhE/edit?usp=sharing
+
 A minimal Django app (one model, two JSON endpoints) built, tested and shipped
 as a container image with Bazel and `aspect_rules_py` 2.x. Hands-on material
 for a 90-minute BazelCon training.
